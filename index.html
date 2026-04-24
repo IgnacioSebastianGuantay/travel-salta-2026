@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viaje Salta + Jujuy — Junio 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  /* ── DARK MODE (default) ── */
+  :root {
+    --bg:      #2C3440;
+    --sidebar: #222b38;
+    --border:  rgba(255,255,255,0.06);
+    --text:    #F2E8D9;
+    --sub:     #6B7280;
+    --gold:    #D4A547;
+    --divider: rgba(255,255,255,0.05);
+    --hover:   rgba(255,255,255,0.05);
+    --active:  rgba(196,98,58,0.2);
+    --scroll:  rgba(255,255,255,0.1);
+    --footer:  rgba(255,255,255,0.2);
+    --hdr-bg:  rgba(0,0,0,0.25);
+    --hdr-border: rgba(255,255,255,0.08);
+    --popup-bg: #1e2b3c;
+    --popup-border: rgba(255,255,255,0.12);
+    --label-bg: rgba(18,26,38,0.85);
+    --time-bg:  rgba(22,30,42,0.88);
+  }
+  /* ── LIGHT MODE ── */
+  body.light {
+    --bg:      #F0EDE6;
+    --sidebar: #FDFAF6;
+    --border:  rgba(0,0,0,0.08);
+    --text:    #1a1a2e;
+    --sub:     #5A5A6A;
+    --gold:    #A07820;
+    --divider: rgba(0,0,0,0.07);
+    --hover:   rgba(0,0,0,0.04);
+    --active:  rgba(196,98,58,0.12);
+    --scroll:  rgba(0,0,0,0.15);
+    --footer:  rgba(0,0,0,0.3);
+    --hdr-bg:  rgba(255,255,255,0.7);
+    --hdr-border: rgba(0,0,0,0.08);
+    --popup-bg: #fff;
+    --popup-border: rgba(0,0,0,0.12);
+    --label-bg: rgba(255,252,248,0.92);
+    --time-bg:  rgba(255,252,245,0.92);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* HEADER */
+  header {
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--hdr-border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--hdr-bg);
+    flex-shrink: 0;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  header h1 { font-family:'Playfair Display',serif; font-size:20px; color:var(--text); flex:1; }
+  header .subtitle { font-family:'DM Mono',monospace; font-size:10px; color:var(--gold); text-transform:uppercase; letter-spacing:2px; }
+
+  /* TOGGLE BUTTON */
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .toggle-btn:hover { background: var(--gold); color: #fff; }
+  .toggle-icon { font-size: 14px; }
+
+  /* LAYOUT */
+  .layout { display:flex; flex:1; overflow:hidden; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 285px; min-width: 285px;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 14px 0 24px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .section-label {
+    font-family:'DM Mono',monospace; font-size:9px;
+    letter-spacing:2.5px; text-transform:uppercase;
+    color:var(--gold); padding:12px 18px 7px;
+  }
+  .place-item {
+    display:flex; align-items:flex-start; gap:10px;
+    padding:8px 14px; cursor:pointer; border-radius:6px;
+    margin:0 6px 2px; transition:background 0.15s;
+  }
+  .place-item:hover  { background: var(--hover); }
+  .place-item.active { background: var(--active); }
+  .num-circle {
+    width:24px; height:24px; min-width:24px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'DM Mono',monospace; font-size:11px; font-weight:600;
+    color:#fff; margin-top:1px; flex-shrink:0;
+    box-shadow:0 1px 4px rgba(0,0,0,0.35);
+  }
+  .place-info h3   { font-size:13px; font-weight:500; color:var(--text); line-height:1.2; }
+  .place-info .sub { font-size:10.5px; color:var(--sub); margin-top:1px; line-height:1.35; }
+  .place-info .dist{ font-family:'DM Mono',monospace; font-size:9.5px; color:var(--gold); opacity:0.8; margin-top:2px; }
+  .badge {
+    display:inline-block; padding:1px 5px; border-radius:3px;
+    font-size:8.5px; font-family:'DM Mono',monospace; letter-spacing:0.3px; margin-top:3px;
+  }
+  .divider { border:none; border-top:1px solid var(--divider); margin:6px 14px; }
+  .footer-note { padding:12px 18px 0; font-family:'DM Mono',monospace; font-size:9px; color:var(--footer); line-height:1.7; }
+
+  /* MAP */
+  #map { flex:1; z-index:1; }
+
+  /* POPUPS */
+  .leaflet-popup-content-wrapper {
+    background: var(--popup-bg) !important;
+    border: 1px solid var(--popup-border) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+    color: var(--text) !important;
+  }
+  .leaflet-popup-tip { background: var(--popup-bg) !important; }
+  .leaflet-popup-content { margin:10px 14px; font-family:'DM Sans',sans-serif; }
+  .popup-day   { font-family:'DM Mono',monospace; font-size:10px; color:var(--gold); letter-spacing:1px; }
+  .popup-title { font-size:14px; font-weight:600; color:var(--text); margin:2px 0; }
+  .popup-sub   { font-size:11px; color:var(--sub); }
+  .popup-dist  { font-family:'DM Mono',monospace; font-size:10px; color:var(--gold); margin-top:3px; opacity:0.85; }
+
+  .time-label { pointer-events:none !important; }
+  .sidebar::-webkit-scrollbar { width:3px; }
+  .sidebar::-webkit-scrollbar-track { background:transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background:var(--scroll); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✈️ Salta + Jujuy</h1>
+  <span class="subtitle">Junio 2026 — Mapa del viaje</span>
+  <button class="toggle-btn" onclick="toggleMode()" id="toggleBtn">
+    <span class="toggle-icon">☀️</span> Modo claro
+  </button>
+</header>
+
+<div class="layout">
+  <div class="sidebar">
+
+    <div class="section-label">🏙 Salta — Base</div>
+    <div class="place-item" id="item-0" onclick="goTo(0)">
+      <div class="num-circle" style="background:#C4623A;">1</div>
+      <div class="place-info">
+        <h3>Salta Capital</h3>
+        <div class="sub">Base del viaje · 5 noches</div>
+        <span class="badge" style="background:rgba(196,98,58,0.15);color:#C4623A;">MAAM · Balcarce · Cabildo</span>
+      </div>
+    </div>
+    <div class="place-item" id="item-1" onclick="goTo(1)">
+      <div class="num-circle" style="background:#5C7A9E;">2</div>
+      <div class="place-info">
+        <h3>Tren a las Nubes</h3>
+        <div class="sub">Sale desde Salta · Día 5</div>
+        <div class="dist">4.200 msnm · Reservar anticipado</div>
+        <span class="badge" style="background:rgba(92,122,158,0.15);color:#5C7A9E;">DÍA 5</span>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label">🌵 Sur y Oeste</div>
+    <div class="place-item" id="item-2" onclick="goTo(2)">
+      <div class="num-circle" style="background:#8B7355;">3</div>
+      <div class="place-info">
+        <h3>Cafayate</h3>
+        <div class="sub">Quebrada de las Conchas · Bodegas</div>
+        <div class="dist">~190 km · 2.5hs desde Salta</div>
+        <span class="badge" style="background:rgba(139,115,85,0.15);color:#8B7355;">DÍA 3 · TORRONTÉS</span>
+      </div>
+    </div>
+    <div class="place-item" id="item-3" onclick="goTo(3)">
+      <div class="num-circle" style="background:#6B8E6B;">4</div>
+      <div class="place-info">
+        <h3>Cachi</h3>
+        <div class="sub">Valles Calchaquíes · Cuesta del Obispo</div>
+        <div class="dist">~170 km · 3hs de montaña</div>
+        <span class="badge" style="background:rgba(107,142,107,0.15);color:#6B8E6B;">DÍA 4 · 2.280 msnm</span>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label">🌈 Jujuy — 3 días</div>
+    <div class="place-item" id="item-4" onclick="goTo(4)">
+      <div class="num-circle" style="background:#9B59B6;">5</div>
+      <div class="place-info">
+        <h3>Purmamarca</h3>
+        <div class="sub">Cerro de los 7 Colores</div>
+        <div class="dist">~170 km · 1.45hs desde Salta</div>
+        <span class="badge" style="background:rgba(155,89,182,0.15);color:#9B59B6;">DÍA 6 · 2.324 msnm</span>
+      </div>
+    </div>
+    <div class="place-item" id="item-5" onclick="goTo(5)">
+      <div class="num-circle" style="background:#E67E22;">6</div>
+      <div class="place-info">
+        <h3>Tilcara</h3>
+        <div class="sub">Pucará · Base Jujuy · 2 noches</div>
+        <div class="dist">~190 km · 2hs desde Salta</div>
+        <span class="badge" style="background:rgba(230,126,34,0.15);color:#E67E22;">DÍA 6-7-8 · 2.461 msnm</span>
+      </div>
+    </div>
+    <div class="place-item" id="item-6" onclick="goTo(6)">
+      <div class="num-circle" style="background:#C9A020;">7</div>
+      <div class="place-info">
+        <h3>Quebrada de Humahuaca</h3>
+        <div class="sub">Patrimonio UNESCO · Humahuaca</div>
+        <div class="dist">~240 km · 3hs desde Salta</div>
+        <span class="badge" style="background:rgba(212,165,71,0.15);color:#C9A020;">DÍA 6 · 2.940 msnm</span>
+      </div>
+    </div>
+    <div class="place-item" id="item-7" onclick="goTo(7)">
+      <div class="num-circle" style="background:#C0392B;">8</div>
+      <div class="place-info">
+        <h3>Iruya ⭐</h3>
+        <div class="sub">Pueblo remoto de adobe · opcional</div>
+        <div class="dist">~330 km · 4.5hs · ripio · SUV</div>
+        <span class="badge" style="background:rgba(192,57,43,0.15);color:#C0392B;">DÍA 8 · 2.780 msnm</span>
+      </div>
+    </div>
+
+    <div class="footer-note">TOTAL RUTA ≈ 1.200 KM<br>5 DÍAS CON AUTO ALQUILADO</div>
+  </div>
+
+  <div id="map"></div>
+</div>
+
+<script>
+/* ── TILE LAYERS ── */
+const darkTile  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const lightTile = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+const attr = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>';
+
+const map = L.map('map', { center:[-24.3,-65.7], zoom:7 });
+let currentLayer = L.tileLayer(darkTile, { attribution:attr, subdomains:'abcd', maxZoom:19 }).addTo(map);
+let isDark = true;
+
+/* ── TOGGLE MODE ── */
+function toggleMode() {
+  isDark = !isDark;
+  const btn = document.getElementById('toggleBtn');
+
+  // Swap tile layer
+  map.removeLayer(currentLayer);
+  currentLayer = L.tileLayer(isDark ? darkTile : lightTile, {
+    attribution: attr, subdomains:'abcd', maxZoom:19
+  }).addTo(map);
+  // Ensure tiles go below markers
+  currentLayer.bringToBack();
+
+  // Swap body class
+  document.body.classList.toggle('light', !isDark);
+
+  // Update button label
+  btn.innerHTML = isDark
+    ? '<span class="toggle-icon">☀️</span> Modo claro'
+    : '<span class="toggle-icon">🌙</span> Modo oscuro';
+
+  // Refresh time label colors
+  refreshTimeLabels();
+}
+
+/* ── PLACES DATA ── */
+const places = [
+  { id:0, num:"1", lat:-24.7821, lng:-65.4232, name:"Salta Capital",         sub:"Base del viaje · 5 noches",              dist:"",                          color:"#C4623A", day:"Base" },
+  { id:1, num:"2", lat:-24.7905, lng:-65.3975, name:"Tren a las Nubes",      sub:"Sale desde Salta ciudad · Día 5",         dist:"4.200 msnm",                color:"#5C7A9E", day:"Día 5" },
+  { id:2, num:"3", lat:-26.0731, lng:-65.9761, name:"Cafayate",              sub:"Quebrada de las Conchas + Bodegas",       dist:"~190 km · 2.5hs de Salta",  color:"#8B7355", day:"Día 3" },
+  { id:3, num:"4", lat:-25.1202, lng:-66.1625, name:"Cachi",                 sub:"Valles Calchaquíes · Cuesta del Obispo",  dist:"~170 km · 3hs de montaña",  color:"#6B8E6B", day:"Día 4" },
+  { id:4, num:"5", lat:-23.7466, lng:-65.4992, name:"Purmamarca",            sub:"Cerro de los 7 Colores",                  dist:"~170 km · 1.45hs de Salta", color:"#9B59B6", day:"Día 6" },
+  { id:5, num:"6", lat:-23.5769, lng:-65.3934, name:"Tilcara",               sub:"Pucará · Base en Jujuy · 2 noches",       dist:"~190 km · 2hs de Salta",    color:"#E67E22", day:"Días 6-7-8" },
+  { id:6, num:"7", lat:-23.2008, lng:-65.3531, name:"Humahuaca",             sub:"Quebrada de Humahuaca · UNESCO",          dist:"~240 km · 3hs de Salta",    color:"#C9A020", day:"Día 6" },
+  { id:7, num:"8", lat:-22.7914, lng:-65.2159, name:"Iruya",                 sub:"Pueblo remoto de adobe · opcional",       dist:"~330 km · 4.5hs · ripio",   color:"#C0392B", day:"Día 8" },
+];
+
+/* ── ROUTE SEGMENTS ── */
+const segments = [
+  { points:[[-24.7821,-65.4232],[-23.7466,-65.4992]], color:'#D4A547', lc:'#D4A547', dash:null,  label:'1h 45min' },
+  { points:[[-23.7466,-65.4992],[-23.5769,-65.3934]], color:'#D4A547', lc:'#D4A547', dash:null,  label:'25 min' },
+  { points:[[-23.5769,-65.3934],[-23.2008,-65.3531]], color:'#D4A547', lc:'#D4A547', dash:null,  label:'40 min' },
+  { points:[[-23.2008,-65.3531],[-22.7914,-65.2159]], color:'#D4A547', lc:'#D4A547', dash:null,  label:'2h 30min' },
+  { points:[[-24.7821,-65.4232],[-26.0731,-65.9761]], color:'#8B7355', lc:'#8B7355', dash:'6 4', label:'2h 30min' },
+  { points:[[-24.7821,-65.4232],[-25.1202,-66.1625]], color:'#6B8E6B', lc:'#6B8E6B', dash:'6 4', label:'3h 00min' },
+];
+
+let timeMarkers = [];
+
+function makeTimeLabelHtml(label, lc) {
+  const bg = isDark ? `rgba(22,30,42,0.88)` : `rgba(255,252,245,0.92)`;
+  const textColor = isDark ? lc : lc;
+  const borderColor = lc;
+  return `<div style="
+    background:${bg};
+    border:1.5px solid ${borderColor};
+    border-radius:12px;
+    padding:3px 9px;
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    font-weight:500;
+    color:${textColor};
+    white-space:nowrap;
+    box-shadow:0 2px 8px rgba(0,0,0,0.25);
+    letter-spacing:0.3px;
+  ">🚗 ${label}</div>`;
+}
+
+function drawSegments() {
+  // Draw lines
+  segments.forEach(seg => {
+    L.polyline(seg.points, {
+      color: seg.color,
+      weight: seg.dash ? 2 : 2.5,
+      opacity: 0.65,
+      dashArray: seg.dash
+    }).addTo(map);
+
+    const mid = [
+      (seg.points[0][0] + seg.points[1][0]) / 2,
+      (seg.points[0][1] + seg.points[1][1]) / 2,
+    ];
+    const icon = L.divIcon({ className:'time-label', html: makeTimeLabelHtml(seg.label, seg.lc), iconSize:null, iconAnchor:null });
+    const m = L.marker(mid, { icon, interactive:false, keyboard:false }).addTo(map);
+    timeMarkers.push({ marker:m, label:seg.label, lc:seg.lc });
+  });
+}
+
+function refreshTimeLabels() {
+  timeMarkers.forEach(t => {
+    t.marker.setIcon(L.divIcon({
+      className:'time-label',
+      html: makeTimeLabelHtml(t.label, t.lc),
+      iconSize:null, iconAnchor:null
+    }));
+  });
+}
+
+drawSegments();
+
+/* ── PLACE MARKERS ── */
+const leafletMarkers = [];
+
+places.forEach(p => {
+  const icon = L.divIcon({
+    className: '',
+    html: `
+      <div style="position:relative;display:flex;align-items:center;gap:7px;pointer-events:none;">
+        <svg width="36" height="46" viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <filter id="sh${p.id}"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,0.5)"/></filter>
+          <path d="M18 1 C9.716 1 3 7.716 3 16 C3 27 18 45 18 45 C18 45 33 27 33 16 C33 7.716 26.284 1 18 1Z"
+                fill="${p.color}" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" filter="url(#sh${p.id})"/>
+          <text x="18" y="20" text-anchor="middle" dominant-baseline="middle"
+                font-family="monospace" font-size="13" font-weight="700" fill="white" letter-spacing="-0.5">${p.num}</text>
+        </svg>
+        <div id="label-${p.id}" style="
+          background:rgba(18,26,38,0.85);
+          border:1.5px solid ${p.color};
+          border-radius:6px;
+          padding:3px 9px;
+          font-family:'DM Sans',sans-serif;
+          font-size:12px;
+          font-weight:600;
+          color:#F2E8D9;
+          white-space:nowrap;
+          box-shadow:0 2px 8px rgba(0,0,0,0.4);
+          line-height:1.3;
+        ">${p.name}</div>
+      </div>`,
+    iconSize: null,
+    iconAnchor: [18, 45],
+    popupAnchor: [80, -46],
+  });
+
+  const marker = L.marker([p.lat, p.lng], {icon}).addTo(map);
+
+  marker.bindPopup(`
+    <div class="popup-day">${p.day}</div>
+    <div class="popup-title">${p.num}. ${p.name}</div>
+    <div class="popup-sub">${p.sub}</div>
+    ${p.dist ? `<div class="popup-dist">${p.dist}</div>` : ''}
+  `, {maxWidth:220, minWidth:180});
+
+  marker.on('click', () => setActive(p.id));
+  leafletMarkers.push({id:p.id, marker, lat:p.lat, lng:p.lng});
+});
+
+/* ── INTERACTION ── */
+function goTo(id) {
+  const m = leafletMarkers.find(m => m.id === id);
+  if (!m) return;
+  const zoom = (id===0||id===1) ? 12 : id>=4 ? 11 : 10;
+  map.flyTo([m.lat, m.lng], zoom, {duration:1.2});
+  setTimeout(() => m.marker.openPopup(), 800);
+  setActive(id);
+}
+
+function setActive(id) {
+  document.querySelectorAll('.place-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('item-'+id);
+  if (el) { el.classList.add('active'); el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+
+map.on('click', () => document.querySelectorAll('.place-item').forEach(el => el.classList.remove('active')));
+</script>
+</body>
+</html>
