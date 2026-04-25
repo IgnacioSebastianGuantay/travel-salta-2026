@@ -160,6 +160,90 @@
   .sidebar::-webkit-scrollbar { width:3px; }
   .sidebar::-webkit-scrollbar-track { background:transparent; }
   .sidebar::-webkit-scrollbar-thumb { background:var(--scroll); border-radius:2px; }
+
+  /* POPUP ACCOMMODATION */
+  .popup-divider { border:none; border-top:1px solid var(--popup-border); margin:7px 0; }
+  .popup-accom-type {
+    display:inline-block; padding:2px 7px; border-radius:4px;
+    font-family:'DM Mono',monospace; font-size:9px; font-weight:600;
+    letter-spacing:1px; text-transform:uppercase; margin-bottom:5px;
+  }
+  .popup-accom-type.hotel  { background:rgba(92,122,158,0.2); color:#5C7A9E; border:1px solid rgba(92,122,158,0.4); }
+  .popup-accom-type.airbnb { background:rgba(255,90,96,0.15); color:#ff5a60; border:1px solid rgba(255,90,96,0.35); }
+  .popup-accom-link {
+    display:block; font-size:11px; color:var(--gold);
+    text-decoration:none; margin-bottom:4px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:195px;
+  }
+  .popup-accom-link:hover { text-decoration:underline; }
+  .popup-accom-row {
+    display:flex; justify-content:space-between; gap:8px;
+    font-family:'DM Mono',monospace; font-size:10px; color:var(--sub); margin-top:4px;
+  }
+  .popup-accom-row span:last-child { color:var(--text); }
+
+  /* ── RESPONSIVE MOBILE ── */
+  .sidebar-handle { display:none; }
+
+  @media (max-width:700px) {
+    header { padding:10px 14px; gap:10px; }
+    header h1 { font-size:15px; }
+    .btn-text { display:none; }
+    .toggle-btn { padding:6px 10px; }
+
+    .layout { position:relative; }
+
+    #map {
+      position:absolute;
+      top:0; left:0; right:0; bottom:0;
+      height:auto; flex:none;
+    }
+
+    .sidebar {
+      position:fixed;
+      bottom:0; left:0; right:0;
+      width:100%; min-width:unset;
+      border-right:none;
+      border-top:1.5px solid var(--border);
+      border-radius:18px 18px 0 0;
+      height:68px;
+      overflow:hidden;
+      transition:height 0.35s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s;
+      z-index:1000;
+      padding:0;
+      box-shadow:0 -4px 24px rgba(0,0,0,0.3);
+    }
+    .sidebar.open {
+      height:65vh;
+      overflow-y:auto;
+    }
+    .sidebar-handle {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:10px 0 6px;
+      cursor:pointer;
+      flex-shrink:0;
+      user-select:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .handle-pill {
+      width:36px; height:4px;
+      background:var(--sub);
+      border-radius:2px;
+      opacity:0.4;
+      margin-bottom:5px;
+    }
+    .handle-label {
+      font-family:'DM Mono',monospace;
+      font-size:9px;
+      letter-spacing:2px;
+      color:var(--gold);
+      text-transform:uppercase;
+    }
+    .section-label { padding-top:4px; }
+    .footer-note { padding-bottom:20px; }
+  }
 </style>
 </head>
 <body>
@@ -168,12 +252,16 @@
   <h1>✈️ Salta + Jujuy</h1>
   <span class="subtitle">Junio 2026 — Mapa del viaje</span>
   <button class="toggle-btn" onclick="toggleMode()" id="toggleBtn">
-    <span class="toggle-icon">☀️</span> Modo claro
+    <span class="toggle-icon">☀️</span><span class="btn-text"> Modo claro</span>
   </button>
 </header>
 
 <div class="layout">
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-handle" id="sidebarHandle">
+      <div class="handle-pill"></div>
+      <span class="handle-label">Ver paradas</span>
+    </div>
 
     <div class="section-label">🏙 Salta — Base</div>
     <div class="place-item" id="item-0" onclick="goTo(0)">
@@ -275,36 +363,47 @@ function toggleMode() {
   isDark = !isDark;
   const btn = document.getElementById('toggleBtn');
 
-  // Swap tile layer
   map.removeLayer(currentLayer);
   currentLayer = L.tileLayer(isDark ? darkTile : lightTile, {
     attribution: attr, subdomains:'abcd', maxZoom:19
   }).addTo(map);
-  // Ensure tiles go below markers
   currentLayer.bringToBack();
 
-  // Swap body class
   document.body.classList.toggle('light', !isDark);
 
-  // Update button label
   btn.innerHTML = isDark
-    ? '<span class="toggle-icon">☀️</span> Modo claro'
-    : '<span class="toggle-icon">🌙</span> Modo oscuro';
+    ? '<span class="toggle-icon">☀️</span><span class="btn-text"> Modo claro</span>'
+    : '<span class="toggle-icon">🌙</span><span class="btn-text"> Modo oscuro</span>';
 
-  // Refresh time label colors
   refreshTimeLabels();
 }
 
+/* ── MOBILE SIDEBAR TOGGLE ── */
+const sidebarEl = document.getElementById('sidebar');
+const handleEl  = document.getElementById('sidebarHandle');
+handleEl.addEventListener('click', () => {
+  sidebarEl.classList.toggle('open');
+  map.invalidateSize();
+});
+
 /* ── PLACES DATA ── */
 const places = [
-  { id:0, num:"1", lat:-24.7821, lng:-65.4232, name:"Salta Capital",         sub:"Base del viaje · 5 noches",              dist:"",                          color:"#C4623A", day:"Base" },
-  { id:1, num:"2", lat:-24.7905, lng:-65.3975, name:"Tren a las Nubes",      sub:"Sale desde Salta ciudad · Día 5",         dist:"4.200 msnm",                color:"#5C7A9E", day:"Día 5" },
-  { id:2, num:"3", lat:-26.0731, lng:-65.9761, name:"Cafayate",              sub:"Quebrada de las Conchas + Bodegas",       dist:"~190 km · 2.5hs de Salta",  color:"#8B7355", day:"Día 3" },
-  { id:3, num:"4", lat:-25.1202, lng:-66.1625, name:"Cachi",                 sub:"Valles Calchaquíes · Cuesta del Obispo",  dist:"~170 km · 3hs de montaña",  color:"#6B8E6B", day:"Día 4" },
-  { id:4, num:"5", lat:-23.7466, lng:-65.4992, name:"Purmamarca",            sub:"Cerro de los 7 Colores",                  dist:"~170 km · 1.45hs de Salta", color:"#9B59B6", day:"Día 6" },
-  { id:5, num:"6", lat:-23.5769, lng:-65.3934, name:"Tilcara",               sub:"Pucará · Base en Jujuy · 2 noches",       dist:"~190 km · 2hs de Salta",    color:"#E67E22", day:"Días 6-7-8" },
-  { id:6, num:"7", lat:-23.2008, lng:-65.3531, name:"Humahuaca",             sub:"Quebrada de Humahuaca · UNESCO",          dist:"~240 km · 3hs de Salta",    color:"#C9A020", day:"Día 6" },
-  { id:7, num:"8", lat:-22.7914, lng:-65.2159, name:"Iruya",                 sub:"Pueblo remoto de adobe · opcional",       dist:"~330 km · 4.5hs · ripio",   color:"#C0392B", day:"Día 8" },
+  { id:0, num:"1", lat:-24.7821, lng:-65.4232, name:"Salta Capital",         sub:"Base del viaje · 5 noches",              dist:"",                          color:"#C4623A", day:"Base",
+    accom:{ type:"hotel",  name:"Hotel Casa Chango",       link:"https://www.booking.com",  price:"$85 USD",  checkin:"01/06/2026", checkout:"06/06/2026" } },
+  { id:1, num:"2", lat:-24.7905, lng:-65.3975, name:"Tren a las Nubes",      sub:"Sale desde Salta ciudad · Día 5",         dist:"4.200 msnm",                color:"#5C7A9E", day:"Día 5",
+    accom:null },
+  { id:2, num:"3", lat:-26.0731, lng:-65.9761, name:"Cafayate",              sub:"Quebrada de las Conchas + Bodegas",       dist:"~190 km · 2.5hs de Salta",  color:"#8B7355", day:"Día 3",
+    accom:{ type:"airbnb", name:"La Bodega del Valle",     link:"https://www.airbnb.com",   price:"$62 USD",  checkin:"03/06/2026", checkout:"04/06/2026" } },
+  { id:3, num:"4", lat:-25.1202, lng:-66.1625, name:"Cachi",                 sub:"Valles Calchaquíes · Cuesta del Obispo",  dist:"~170 km · 3hs de montaña",  color:"#6B8E6B", day:"Día 4",
+    accom:{ type:"hotel",  name:"Llaqta Marka Lodge",      link:"https://www.booking.com",  price:"$74 USD",  checkin:"04/06/2026", checkout:"05/06/2026" } },
+  { id:4, num:"5", lat:-23.7466, lng:-65.4992, name:"Purmamarca",            sub:"Cerro de los 7 Colores",                  dist:"~170 km · 1.45hs de Salta", color:"#9B59B6", day:"Día 6",
+    accom:{ type:"airbnb", name:"Rincón del Cerro",        link:"https://www.airbnb.com",   price:"$55 USD",  checkin:"06/06/2026", checkout:"07/06/2026" } },
+  { id:5, num:"6", lat:-23.5769, lng:-65.3934, name:"Tilcara",               sub:"Pucará · Base en Jujuy · 2 noches",       dist:"~190 km · 2hs de Salta",    color:"#E67E22", day:"Días 6-7-8",
+    accom:{ type:"airbnb", name:"Casa del Pucará",         link:"https://www.airbnb.com",   price:"$68 USD",  checkin:"06/06/2026", checkout:"08/06/2026" } },
+  { id:6, num:"7", lat:-23.2008, lng:-65.3531, name:"Humahuaca",             sub:"Quebrada de Humahuaca · UNESCO",          dist:"~240 km · 3hs de Salta",    color:"#C9A020", day:"Día 6",
+    accom:null },
+  { id:7, num:"8", lat:-22.7914, lng:-65.2159, name:"Iruya",                 sub:"Pueblo remoto de adobe · opcional",       dist:"~330 km · 4.5hs · ripio",   color:"#C0392B", day:"Día 8",
+    accom:{ type:"hotel",  name:"El Adobe de Iruya",       link:"https://www.booking.com",  price:"$48 USD",  checkin:"08/06/2026", checkout:"09/06/2026" } },
 ];
 
 /* ── ROUTE SEGMENTS ── */
@@ -406,12 +505,22 @@ places.forEach(p => {
 
   const marker = L.marker([p.lat, p.lng], {icon}).addTo(map);
 
+  const accomHtml = p.accom ? `
+    <hr class="popup-divider">
+    <span class="popup-accom-type ${p.accom.type}">${p.accom.type === 'hotel' ? '🏨 HOTEL' : '🏠 AIRBNB'}</span>
+    <a class="popup-accom-link" href="${p.accom.link}" target="_blank" rel="noopener">${p.accom.name} ↗</a>
+    <div class="popup-accom-row"><span>💰 Por noche</span><span>${p.accom.price}</span></div>
+    <div class="popup-accom-row"><span>📅 Check-in</span><span>${p.accom.checkin}</span></div>
+    <div class="popup-accom-row"><span>📅 Check-out</span><span>${p.accom.checkout}</span></div>
+  ` : '';
+
   marker.bindPopup(`
     <div class="popup-day">${p.day}</div>
     <div class="popup-title">${p.num}. ${p.name}</div>
     <div class="popup-sub">${p.sub}</div>
     ${p.dist ? `<div class="popup-dist">${p.dist}</div>` : ''}
-  `, {maxWidth:220, minWidth:180});
+    ${accomHtml}
+  `, {maxWidth:240, minWidth:200});
 
   marker.on('click', () => setActive(p.id));
   leafletMarkers.push({id:p.id, marker, lat:p.lat, lng:p.lng});
@@ -425,6 +534,10 @@ function goTo(id) {
   map.flyTo([m.lat, m.lng], zoom, {duration:1.2});
   setTimeout(() => m.marker.openPopup(), 800);
   setActive(id);
+  if (window.innerWidth <= 700) {
+    sidebarEl.classList.remove('open');
+    map.invalidateSize();
+  }
 }
 
 function setActive(id) {
