@@ -451,16 +451,12 @@
     background: var(--sidebar);
     transition: background 0.3s, border-color 0.3s;
   }
-  .sb-tabs { display: flex; gap: 4px; flex: 1; }
-  .sb-tab {
-    flex: 1; padding: 6px 0; border-radius: 6px;
-    border: 1px solid var(--border); background: transparent;
-    color: var(--sub); font-family: 'DM Mono', monospace;
-    font-size: 10px; letter-spacing: 0.5px; cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  .sb-topbar-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--gold);
+    flex: 1;
   }
-  .sb-tab:hover { background: var(--hover); color: var(--text); }
-  .sb-tab.active { background: rgba(212,165,71,0.15); border-color: var(--gold); color: var(--gold); }
   .collapse-btn {
     width: 28px; height: 28px; min-width: 28px; border-radius: 6px;
     border: 1px solid var(--border); background: transparent;
@@ -487,7 +483,7 @@
   }
   #sbDayContent { padding: 16px 16px 28px; }
 
-  @media (min-width: 701px) { #dayBtn { display: none; } }
+  #dayBtn { display: none; }
   @media (max-width: 700px) { .sidebar-topbar { display: none; } }
 
   @keyframes markerPop {
@@ -589,9 +585,90 @@
     .panel-accom-row:last-child { border-bottom: none; }
     .panel-accom-row span:last-child { color: var(--text); font-weight: 500; }
   }
+
+  /* ── LOGIN ── */
+  #loginOverlay {
+    position: fixed; inset: 0;
+    background: #1a2233;
+    z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #loginOverlay.hidden { display: none; }
+  .login-box {
+    width: 100%; max-width: 340px;
+    background: #222b38;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 36px 32px 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .login-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; color: #F2E8D9;
+    margin-bottom: 4px;
+  }
+  .login-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: #D4A547;
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .login-field { margin-bottom: 14px; }
+  .login-field label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: #6B7280;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .login-field input {
+    width: 100%; padding: 10px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #F2E8D9; font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .login-field input:focus { border-color: #D4A547; }
+  .login-btn {
+    width: 100%; padding: 11px;
+    margin-top: 8px;
+    background: #D4A547; border: none; border-radius: 8px;
+    color: #1a2233; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .login-btn:hover { background: #e0b55a; }
+  .login-error {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: #e07070;
+    text-align: center; margin-top: 12px;
+    min-height: 16px;
+  }
 </style>
 </head>
 <body>
+
+<!-- LOGIN -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-title">✈️ Salta + Jujuy</div>
+    <div class="login-sub">Junio 2026 — Acceso privado</div>
+    <form onsubmit="doLogin(event)">
+      <div class="login-field">
+        <label>Usuario</label>
+        <input type="text" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false" />
+      </div>
+      <div class="login-field">
+        <label>Contraseña</label>
+        <input type="password" id="loginPass" autocomplete="current-password" />
+      </div>
+      <button class="login-btn" type="submit">Entrar</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+</div>
 
 <header>
   <div class="header-text">
@@ -613,133 +690,18 @@
   <div class="sidebar" id="sidebar">
     <div class="sidebar-handle" id="sidebarHandle">
       <div class="handle-pill"></div>
-      <span class="handle-label">Ver paradas</span>
+      <span class="handle-label">Itinerario</span>
     </div>
 
-    <!-- Desktop topbar: tabs + colapso -->
+    <!-- Desktop topbar -->
     <div class="sidebar-topbar">
-      <div class="sb-tabs">
-        <button class="sb-tab active" id="tab-places" onclick="switchSidebarTab('places')">Paradas</button>
-        <button class="sb-tab" id="tab-itin" onclick="switchSidebarTab('itin')">Itinerario</button>
-      </div>
+      <span class="sb-topbar-title">📅 Itinerario</span>
       <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()" title="Ocultar panel">◀</button>
     </div>
 
-    <div id="panel-places">
-    <div class="section-label">✈️ Vuelos</div>
-    <div class="flight-tag">Ida</div>
-    <div class="flight-card">
-      <div class="flight-route">
-        <div class="flight-airport">
-          <div class="flight-iata">AEP</div>
-          <div class="flight-time">08:00</div>
-          <div class="flight-city">Bs. Aires</div>
-        </div>
-        <div class="flight-middle">
-          <div class="flight-arrow">
-            <div class="flight-line"></div>
-            <span class="flight-plane">✈</span>
-            <div class="flight-line"></div>
-          </div>
-          <div class="flight-dur">2h 15m · Directo</div>
-        </div>
-        <div class="flight-airport">
-          <div class="flight-iata">SLA</div>
-          <div class="flight-time">10:15</div>
-          <div class="flight-city">Salta</div>
-        </div>
-      </div>
-      <div class="flight-meta">
-        <span class="flight-date">30 May 2026</span>
-        <span class="flight-airline">Aerolíneas AR</span>
-      </div>
-    </div>
-    <div class="flight-tag" style="padding-top:4px;">Vuelta</div>
-    <div class="flight-card">
-      <div class="flight-route">
-        <div class="flight-airport">
-          <div class="flight-iata">JUJ</div>
-          <div class="flight-time">18:45</div>
-          <div class="flight-city">Jujuy</div>
-        </div>
-        <div class="flight-middle">
-          <div class="flight-arrow">
-            <div class="flight-line"></div>
-            <span class="flight-plane">✈</span>
-            <div class="flight-line"></div>
-          </div>
-          <div class="flight-dur">2h 10m · Directo</div>
-        </div>
-        <div class="flight-airport">
-          <div class="flight-iata">AEP</div>
-          <div class="flight-time">20:55</div>
-          <div class="flight-city">Bs. Aires</div>
-        </div>
-      </div>
-      <div class="flight-meta">
-        <span class="flight-date">6 Jun 2026</span>
-        <span class="flight-airline">Aerolíneas AR</span>
-      </div>
-    </div>
-
-    <hr class="divider">
-    <div class="section-label">🏙 Salta — Base</div>
-    <div class="place-item" id="item-0" onclick="goTo(0)">
-      <div class="num-circle" style="background:#C4623A;">1</div>
-      <div class="place-info">
-        <h3>Salta Capital</h3>
-        <div class="sub">Joy Tower · 1 noche · Monoambiente</div>
-        <span class="badge" style="background:rgba(196,98,58,0.15);color:#C4623A;">MAAM · Balcarce · Cabildo</span>
-      </div>
-    </div>
-
-    <hr class="divider">
-    <div class="section-label">🌵 Sur y Oeste</div>
-    <div class="place-item" id="item-2" onclick="goTo(2)">
-      <div class="num-circle" style="background:#8B7355;">2</div>
-      <div class="place-info">
-        <h3>Cafayate</h3>
-        <div class="sub">Quebrada de las Conchas · Bodegas</div>
-        <div class="dist">~190 km · 2.5hs desde Salta</div>
-        <span class="badge" style="background:rgba(139,115,85,0.15);color:#8B7355;">DÍA 3 · TORRONTÉS</span>
-      </div>
-    </div>
-
-    <hr class="divider">
-    <div class="section-label">🌈 Jujuy — 3 días</div>
-    <div class="place-item" id="item-4" onclick="goTo(4)">
-      <div class="num-circle" style="background:#9B59B6;">3</div>
-      <div class="place-info">
-        <h3>Purmamarca</h3>
-        <div class="sub">Cerro de los 7 Colores</div>
-        <div class="dist">~170 km · 1.45hs desde Salta</div>
-        <span class="badge" style="background:rgba(155,89,182,0.15);color:#9B59B6;">DÍA 6 · 2.324 msnm</span>
-      </div>
-    </div>
-    <div class="place-item" id="item-5" onclick="goTo(5)">
-      <div class="num-circle" style="background:#E67E22;">4</div>
-      <div class="place-info">
-        <h3>Tilcara</h3>
-        <div class="sub">Pucará · Base Jujuy · 2 noches</div>
-        <div class="dist">~190 km · 2hs desde Salta</div>
-        <span class="badge" style="background:rgba(230,126,34,0.15);color:#E67E22;">DÍA 6-7-8 · 2.461 msnm</span>
-      </div>
-    </div>
-    <div class="place-item" id="item-6" onclick="goTo(6)">
-      <div class="num-circle" style="background:#C9A020;">5</div>
-      <div class="place-info">
-        <h3>Quebrada de Humahuaca</h3>
-        <div class="sub">Patrimonio UNESCO · Humahuaca</div>
-        <div class="dist">~240 km · 3hs desde Salta</div>
-        <span class="badge" style="background:rgba(212,165,71,0.15);color:#C9A020;">DÍA 6 · 2.940 msnm</span>
-      </div>
-    </div>
-
-    <div class="footer-note">TOTAL RUTA ≈ 1.200 KM<br>5 DÍAS CON AUTO ALQUILADO</div>
-    </div><!-- /#panel-places -->
 
     <!-- Panel itinerario -->
-    <div id="panel-itin" style="display:none">
+    <div id="panel-itin">
       <div class="day-tabs" id="sbDayTabs"></div>
       <div class="day-content" id="sbDayContent"></div>
     </div>
@@ -778,6 +740,32 @@
 </div>
 
 <script>
+/* ── LOGIN ── */
+const CRED_HASH = 'b6911b347e291d7ffb0c3180d4ace4065a045c42a7175905840b56513573460f';
+
+(function() {
+  if (sessionStorage.getItem('auth') === '1') {
+    document.getElementById('loginOverlay').classList.add('hidden');
+  }
+})();
+
+async function doLogin(e) {
+  e.preventDefault();
+  const user = document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const raw   = user + ':' + pass;
+  const buf   = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+  const hash  = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  if (hash === CRED_HASH) {
+    sessionStorage.setItem('auth', '1');
+    document.getElementById('loginOverlay').classList.add('hidden');
+  } else {
+    document.getElementById('loginError').textContent = 'Usuario o contraseña incorrectos';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginPass').focus();
+  }
+}
+
 /* ── TILE LAYERS ── */
 const darkTile  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const lightTile = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
@@ -1028,7 +1016,7 @@ function openInfoPanel(p) {
   }
   infoPanel.classList.add('visible');
   sidebarEl.classList.remove('open');
-  handleLabel.textContent = 'Ver paradas';
+  handleLabel.textContent = 'Itinerario';
 }
 
 function closeInfoPanel() {
@@ -1044,7 +1032,7 @@ function goTo(id) {
   if (window.innerWidth <= 700) {
     setTimeout(() => openInfoPanel(m.place), 800);
     sidebarEl.classList.remove('open');
-    handleLabel.textContent = 'Ver paradas';
+    handleLabel.textContent = 'Itinerario';
   } else {
     setTimeout(() => m.marker.openPopup(), 800);
   }
@@ -1250,14 +1238,6 @@ function highlightDayPlaces(ids) {
   }
 }
 
-function switchSidebarTab(tab) {
-  document.getElementById('tab-places').classList.toggle('active', tab === 'places');
-  document.getElementById('tab-itin').classList.toggle('active', tab === 'itin');
-  document.getElementById('panel-places').style.display = tab === 'places' ? '' : 'none';
-  document.getElementById('panel-itin').style.display = tab === 'itin' ? '' : 'none';
-  if (tab === 'itin') highlightDayPlaces(itinerary[currentSbDayIdx].mapIds);
-  else highlightDayPlaces([]);
-}
 
 let currentSbDayIdx = 0;
 
