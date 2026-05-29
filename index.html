@@ -96,7 +96,7 @@
     flex-shrink: 0;
   }
   .toggle-btn:hover { background: var(--gold); color: #fff; }
-  .toggle-btn--off { opacity: 0.4; }
+  .toggle-btn--off { color: var(--sub); border-color: rgba(255,255,255,0.15); }
   .toggle-icon { font-size: 14px; }
 
   /* LAYOUT */
@@ -317,6 +317,15 @@
     .footer-note { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
     .leaflet-popup-content-wrapper { font-size: 13px; }
     .popup-title { font-size: 13px; }
+
+    /* Handle fills full collapsed height so day tabs don't bleed through */
+    .sidebar-handle { min-height: 72px; }
+
+    /* Day tabs sticky uses top:0 on mobile (no topbar above) */
+    #sbDayTabs { top: 0; }
+
+    /* Day content padding bottom for safe area */
+    #sbDayContent { padding: 14px 14px calc(20px + env(safe-area-inset-bottom)); }
   }
 
   @media (max-width: 380px) {
