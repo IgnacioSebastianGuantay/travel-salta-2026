@@ -55,6 +55,7 @@
     background: var(--bg);
     color: var(--text);
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -95,6 +96,7 @@
     flex-shrink: 0;
   }
   .toggle-btn:hover { background: var(--gold); color: #fff; }
+  .toggle-btn--off { opacity: 0.4; }
   .toggle-icon { font-size: 14px; }
 
   /* LAYOUT */
@@ -106,7 +108,7 @@
     background: var(--sidebar);
     border-right: 1px solid var(--border);
     overflow-y: auto;
-    padding: 14px 0 24px;
+    padding: 0;
     transition: background 0.3s, border-color 0.3s;
   }
   .section-label {
@@ -182,75 +184,426 @@
   }
   .popup-accom-row span:last-child { color:var(--text); }
 
+  /* ── FLIGHT CARDS ── */
+  .flight-card {
+    margin: 2px 8px 6px;
+    border-radius: 8px;
+    background: rgba(212,165,71,0.07);
+    border: 1px solid rgba(212,165,71,0.2);
+    padding: 10px 12px 8px;
+  }
+  .flight-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5px; letter-spacing: 1.8px;
+    text-transform: uppercase; color: var(--sub);
+    padding: 0 14px 4px;
+  }
+  .flight-route {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 6px;
+    margin-bottom: 7px;
+  }
+  .flight-airport { text-align: center; }
+  .flight-iata {
+    font-family: 'DM Mono', monospace;
+    font-size: 17px; font-weight: 500;
+    color: var(--text); line-height: 1;
+  }
+  .flight-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; color: var(--gold); margin-top: 2px;
+  }
+  .flight-city { font-size: 9px; color: var(--sub); margin-top: 1px; }
+  .flight-middle {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+  }
+  .flight-arrow { display: flex; align-items: center; width: 100%; }
+  .flight-line { flex: 1; border-top: 1.5px dashed rgba(212,165,71,0.3); }
+  .flight-plane { font-size: 12px; color: var(--gold); opacity: 0.7; padding: 0 3px; }
+  .flight-dur {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--sub); letter-spacing: 0.3px;
+  }
+  .flight-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--divider); padding-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+  .flight-date { font-size: 9.5px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
+  .flight-airline { font-size: 9px; color: var(--sub); }
+
   /* ── RESPONSIVE MOBILE ── */
   .sidebar-handle { display:none; }
 
   @media (max-width:700px) {
-    header { padding:10px 14px; gap:10px; }
-    header h1 { font-size:15px; }
+    header {
+      padding: 10px 14px;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+    .header-text { flex:1; min-width:0; }
+    header h1 {
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    header .subtitle { display: none; }
     .btn-text { display:none; }
-    .toggle-btn { padding:6px 10px; }
+    .toggle-btn { padding:6px 10px; flex-shrink:0; }
 
-    .layout { position:relative; }
+    .layout {
+      flex: 1;
+      min-height: 0;
+    }
 
     #map {
-      position:absolute;
-      top:0; left:0; right:0; bottom:0;
-      height:auto; flex:none;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
     }
 
     .sidebar {
-      position:fixed;
-      bottom:0; left:0; right:0;
-      width:100%; min-width:unset;
-      border-right:none;
-      border-top:1.5px solid var(--border);
-      border-radius:18px 18px 0 0;
-      height:68px;
-      overflow:hidden;
-      transition:height 0.35s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s;
-      z-index:1000;
-      padding:0;
-      box-shadow:0 -4px 24px rgba(0,0,0,0.3);
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      width: 100%; min-width: unset;
+      border-right: none;
+      border-top: 1.5px solid var(--border);
+      border-radius: 18px 18px 0 0;
+      height: 72px;
+      overflow: hidden;
+      transition: height 0.35s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s;
+      z-index: 1000;
+      padding: 0;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+      padding-bottom: env(safe-area-inset-bottom);
     }
     .sidebar.open {
-      height:65vh;
-      overflow-y:auto;
+      height: 70vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .sidebar-handle {
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      padding:10px 0 6px;
-      cursor:pointer;
-      flex-shrink:0;
-      user-select:none;
-      -webkit-tap-highlight-color:transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 56px;
+      justify-content: center;
     }
     .handle-pill {
-      width:36px; height:4px;
-      background:var(--sub);
-      border-radius:2px;
-      opacity:0.4;
-      margin-bottom:5px;
+      width: 40px; height: 4px;
+      background: var(--sub);
+      border-radius: 2px;
+      opacity: 0.5;
+      margin-bottom: 6px;
     }
     .handle-label {
-      font-family:'DM Mono',monospace;
-      font-size:9px;
-      letter-spacing:2px;
-      color:var(--gold);
-      text-transform:uppercase;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-transform: uppercase;
     }
-    .section-label { padding-top:4px; }
-    .footer-note { padding-bottom:20px; }
+    .section-label { padding-top: 6px; }
+    .place-item { padding: 10px 14px; }
+    .place-info h3 { font-size: 14px; }
+    .place-info .sub { font-size: 11.5px; }
+    .footer-note { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+    .leaflet-popup-content-wrapper { font-size: 13px; }
+    .popup-title { font-size: 13px; }
+  }
+
+  @media (max-width: 380px) {
+    header h1 { font-size: 13px; }
+    .toggle-btn { padding: 5px 8px; font-size: 10px; }
+  }
+
+  /* ── DAY ITINERARY MODAL ── */
+  .day-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .day-overlay.open { display: flex; }
+  .day-modal {
+    background: var(--sidebar);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%; max-width: 500px;
+    max-height: 85vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .day-modal-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-shrink: 0;
+  }
+  .day-modal-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .day-modal-close {
+    background: var(--hover); border: none;
+    color: var(--sub); font-size: 15px; cursor: pointer;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+  }
+  .day-modal-close:hover { background: var(--border); }
+  .day-tabs {
+    display: flex; gap: 5px;
+    padding: 10px 14px;
+    overflow-x: auto; flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+    scrollbar-width: none;
+  }
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-tab {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 7px 9px 6px; border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer; min-width: 46px;
+    background: transparent;
+    transition: background 0.15s, border-color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .day-tab:hover { background: var(--hover); }
+  .day-tab.active { background: rgba(212,165,71,0.15); border-color: var(--gold); }
+  .day-tab-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px; font-weight: 500; color: var(--text); line-height: 1;
+  }
+  .day-tab.active .day-tab-num { color: var(--gold); }
+  .day-tab-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px; color: var(--sub); margin-top: 3px; white-space: nowrap;
+  }
+  .day-content {
+    overflow-y: auto; padding: 18px 20px 28px; flex: 1;
+  }
+  .day-content::-webkit-scrollbar { width: 3px; }
+  .day-content::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 2px; }
+  .day-content-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--gold);
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .day-content-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; color: var(--text); line-height: 1.2;
+    margin-bottom: 18px;
+  }
+  .timeline { display: flex; flex-direction: column; }
+  .timeline-item { display: flex; gap: 13px; }
+  .timeline-left {
+    display: flex; flex-direction: column; align-items: center;
+    width: 36px; flex-shrink: 0;
+  }
+  .timeline-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0; z-index: 1;
+  }
+  .timeline-line {
+    width: 2px; flex: 1; min-height: 10px;
+    background: var(--border); margin: 3px 0;
+  }
+  .timeline-body { padding-bottom: 16px; flex: 1; min-width: 0; }
+  .tl-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--sub); margin-bottom: 2px;
+  }
+  .tl-title { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.3; margin-bottom: 3px; }
+  .tl-detail { font-size: 12px; color: var(--sub); line-height: 1.5; }
+
+  @media (max-width: 700px) {
+    .day-overlay { padding: 0; align-items: flex-end; }
+    .day-modal { max-width: 100%; border-radius: 20px 20px 0 0; max-height: 90vh; }
+    .day-content-title { font-size: 19px; }
+  }
+
+  /* ── SIDEBAR TOPBAR, TABS & COLLAPSE ── */
+  .sidebar-topbar {
+    display: flex; align-items: center;
+    padding: 8px 10px; gap: 6px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: sticky; top: 0; z-index: 10;
+    background: var(--sidebar);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .sb-tabs { display: flex; gap: 4px; flex: 1; }
+  .sb-tab {
+    flex: 1; padding: 6px 0; border-radius: 6px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--sub); font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.5px; cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .sb-tab:hover { background: var(--hover); color: var(--text); }
+  .sb-tab.active { background: rgba(212,165,71,0.15); border-color: var(--gold); color: var(--gold); }
+  .collapse-btn {
+    width: 28px; height: 28px; min-width: 28px; border-radius: 6px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--sub); font-size: 11px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s; flex-shrink: 0;
+  }
+  .collapse-btn:hover { background: var(--hover); color: var(--text); }
+
+  .sidebar.collapsed { width: 40px !important; min-width: 40px !important; }
+  .sidebar.collapsed .sb-tabs,
+  .sidebar.collapsed #panel-places,
+  .sidebar.collapsed #panel-itin { display: none !important; }
+  .sidebar.collapsed .sidebar-topbar {
+    justify-content: center; border-bottom-color: transparent;
+  }
+
+  #panel-places { padding: 8px 0 24px; }
+  #sbDayTabs {
+    position: sticky; top: 44px; z-index: 9;
+    background: var(--sidebar);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  #sbDayContent { padding: 16px 16px 28px; }
+
+  @media (min-width: 701px) { #dayBtn { display: none; } }
+  @media (max-width: 700px) { .sidebar-topbar { display: none; } }
+
+  @keyframes markerPop {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.35); }
+    65%  { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+  .marker-pop { animation: markerPop 0.45s ease; }
+
+  /* ── INFO PANEL (mobile bottom sheet) ── */
+  .info-panel { display: none; }
+
+  @media (max-width: 700px) {
+    .info-panel {
+      display: block;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--popup-bg);
+      border: 1px solid var(--popup-border);
+      border-radius: 20px 20px 0 0;
+      padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+      z-index: 1100;
+      transform: translateY(110%);
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 -6px 32px rgba(0,0,0,0.35);
+    }
+    .info-panel.visible { transform: translateY(0); }
+
+    .panel-drag {
+      display: flex;
+      justify-content: center;
+      padding: 12px 0 4px;
+    }
+    .panel-drag-pill {
+      width: 40px; height: 4px;
+      background: var(--sub);
+      border-radius: 2px;
+      opacity: 0.4;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 4px 20px 12px;
+      gap: 12px;
+    }
+    .panel-header-info { flex: 1; min-width: 0; }
+    .panel-close {
+      background: var(--hover);
+      border: none;
+      color: var(--sub);
+      font-size: 16px;
+      cursor: pointer;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .panel-body { padding: 0 20px; }
+    .panel-day {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; color: var(--gold);
+      letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .panel-title {
+      font-size: 20px; font-weight: 600;
+      color: var(--text); line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .panel-sub { font-size: 14px; color: var(--sub); line-height: 1.4; }
+    .panel-dist {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--gold);
+      opacity: 0.85; margin-top: 5px;
+    }
+    .panel-divider { border: none; border-top: 1px solid var(--popup-border); margin: 14px 0; }
+    .panel-accom-type {
+      display: inline-block; padding: 3px 10px; border-radius: 5px;
+      font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .panel-accom-type.hotel  { background: rgba(92,122,158,0.2); color: #5C7A9E; border: 1px solid rgba(92,122,158,0.4); }
+    .panel-accom-type.airbnb { background: rgba(255,90,96,0.15); color: #ff5a60; border: 1px solid rgba(255,90,96,0.35); }
+    .panel-accom-name {
+      display: block; font-size: 15px; font-weight: 500;
+      color: var(--gold); text-decoration: none; margin-bottom: 10px;
+    }
+    .panel-accom-name:hover { text-decoration: underline; }
+    .panel-accom-row {
+      display: flex; justify-content: space-between;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      color: var(--sub); padding: 6px 0;
+      border-bottom: 1px solid var(--divider);
+    }
+    .panel-accom-row:last-child { border-bottom: none; }
+    .panel-accom-row span:last-child { color: var(--text); font-weight: 500; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>✈️ Salta + Jujuy</h1>
-  <span class="subtitle">Junio 2026 — Mapa del viaje</span>
+  <div class="header-text">
+    <h1>✈️ Salta + Jujuy</h1>
+    <span class="subtitle">Junio 2026 — Mapa del viaje</span>
+  </div>
+  <button class="toggle-btn" onclick="openDayModal()" id="dayBtn">
+    <span class="toggle-icon">📅</span><span class="btn-text"> Itinerario</span>
+  </button>
+  <button class="toggle-btn toggle-btn--off" onclick="toggleTimeLabels()" id="timeBtn" title="Tiempos de viaje">
+    <span class="toggle-icon">🚗</span><span class="btn-text"> Tiempos</span>
+  </button>
   <button class="toggle-btn" onclick="toggleMode()" id="toggleBtn">
     <span class="toggle-icon">☀️</span><span class="btn-text"> Modo claro</span>
   </button>
@@ -263,29 +616,87 @@
       <span class="handle-label">Ver paradas</span>
     </div>
 
+    <!-- Desktop topbar: tabs + colapso -->
+    <div class="sidebar-topbar">
+      <div class="sb-tabs">
+        <button class="sb-tab active" id="tab-places" onclick="switchSidebarTab('places')">Paradas</button>
+        <button class="sb-tab" id="tab-itin" onclick="switchSidebarTab('itin')">Itinerario</button>
+      </div>
+      <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()" title="Ocultar panel">◀</button>
+    </div>
+
+    <div id="panel-places">
+    <div class="section-label">✈️ Vuelos</div>
+    <div class="flight-tag">Ida</div>
+    <div class="flight-card">
+      <div class="flight-route">
+        <div class="flight-airport">
+          <div class="flight-iata">AEP</div>
+          <div class="flight-time">08:00</div>
+          <div class="flight-city">Bs. Aires</div>
+        </div>
+        <div class="flight-middle">
+          <div class="flight-arrow">
+            <div class="flight-line"></div>
+            <span class="flight-plane">✈</span>
+            <div class="flight-line"></div>
+          </div>
+          <div class="flight-dur">2h 15m · Directo</div>
+        </div>
+        <div class="flight-airport">
+          <div class="flight-iata">SLA</div>
+          <div class="flight-time">10:15</div>
+          <div class="flight-city">Salta</div>
+        </div>
+      </div>
+      <div class="flight-meta">
+        <span class="flight-date">30 May 2026</span>
+        <span class="flight-airline">Aerolíneas AR</span>
+      </div>
+    </div>
+    <div class="flight-tag" style="padding-top:4px;">Vuelta</div>
+    <div class="flight-card">
+      <div class="flight-route">
+        <div class="flight-airport">
+          <div class="flight-iata">JUJ</div>
+          <div class="flight-time">18:45</div>
+          <div class="flight-city">Jujuy</div>
+        </div>
+        <div class="flight-middle">
+          <div class="flight-arrow">
+            <div class="flight-line"></div>
+            <span class="flight-plane">✈</span>
+            <div class="flight-line"></div>
+          </div>
+          <div class="flight-dur">2h 10m · Directo</div>
+        </div>
+        <div class="flight-airport">
+          <div class="flight-iata">AEP</div>
+          <div class="flight-time">20:55</div>
+          <div class="flight-city">Bs. Aires</div>
+        </div>
+      </div>
+      <div class="flight-meta">
+        <span class="flight-date">6 Jun 2026</span>
+        <span class="flight-airline">Aerolíneas AR</span>
+      </div>
+    </div>
+
+    <hr class="divider">
     <div class="section-label">🏙 Salta — Base</div>
     <div class="place-item" id="item-0" onclick="goTo(0)">
       <div class="num-circle" style="background:#C4623A;">1</div>
       <div class="place-info">
         <h3>Salta Capital</h3>
-        <div class="sub">Base del viaje · 5 noches</div>
+        <div class="sub">Joy Tower · 1 noche · Monoambiente</div>
         <span class="badge" style="background:rgba(196,98,58,0.15);color:#C4623A;">MAAM · Balcarce · Cabildo</span>
-      </div>
-    </div>
-    <div class="place-item" id="item-1" onclick="goTo(1)">
-      <div class="num-circle" style="background:#5C7A9E;">2</div>
-      <div class="place-info">
-        <h3>Tren a las Nubes</h3>
-        <div class="sub">Sale desde Salta · Día 5</div>
-        <div class="dist">4.200 msnm · Reservar anticipado</div>
-        <span class="badge" style="background:rgba(92,122,158,0.15);color:#5C7A9E;">DÍA 5</span>
       </div>
     </div>
 
     <hr class="divider">
     <div class="section-label">🌵 Sur y Oeste</div>
     <div class="place-item" id="item-2" onclick="goTo(2)">
-      <div class="num-circle" style="background:#8B7355;">3</div>
+      <div class="num-circle" style="background:#8B7355;">2</div>
       <div class="place-info">
         <h3>Cafayate</h3>
         <div class="sub">Quebrada de las Conchas · Bodegas</div>
@@ -293,20 +704,11 @@
         <span class="badge" style="background:rgba(139,115,85,0.15);color:#8B7355;">DÍA 3 · TORRONTÉS</span>
       </div>
     </div>
-    <div class="place-item" id="item-3" onclick="goTo(3)">
-      <div class="num-circle" style="background:#6B8E6B;">4</div>
-      <div class="place-info">
-        <h3>Cachi</h3>
-        <div class="sub">Valles Calchaquíes · Cuesta del Obispo</div>
-        <div class="dist">~170 km · 3hs de montaña</div>
-        <span class="badge" style="background:rgba(107,142,107,0.15);color:#6B8E6B;">DÍA 4 · 2.280 msnm</span>
-      </div>
-    </div>
 
     <hr class="divider">
     <div class="section-label">🌈 Jujuy — 3 días</div>
     <div class="place-item" id="item-4" onclick="goTo(4)">
-      <div class="num-circle" style="background:#9B59B6;">5</div>
+      <div class="num-circle" style="background:#9B59B6;">3</div>
       <div class="place-info">
         <h3>Purmamarca</h3>
         <div class="sub">Cerro de los 7 Colores</div>
@@ -315,7 +717,7 @@
       </div>
     </div>
     <div class="place-item" id="item-5" onclick="goTo(5)">
-      <div class="num-circle" style="background:#E67E22;">6</div>
+      <div class="num-circle" style="background:#E67E22;">4</div>
       <div class="place-info">
         <h3>Tilcara</h3>
         <div class="sub">Pucará · Base Jujuy · 2 noches</div>
@@ -324,7 +726,7 @@
       </div>
     </div>
     <div class="place-item" id="item-6" onclick="goTo(6)">
-      <div class="num-circle" style="background:#C9A020;">7</div>
+      <div class="num-circle" style="background:#C9A020;">5</div>
       <div class="place-info">
         <h3>Quebrada de Humahuaca</h3>
         <div class="sub">Patrimonio UNESCO · Humahuaca</div>
@@ -332,20 +734,47 @@
         <span class="badge" style="background:rgba(212,165,71,0.15);color:#C9A020;">DÍA 6 · 2.940 msnm</span>
       </div>
     </div>
-    <div class="place-item" id="item-7" onclick="goTo(7)">
-      <div class="num-circle" style="background:#C0392B;">8</div>
-      <div class="place-info">
-        <h3>Iruya ⭐</h3>
-        <div class="sub">Pueblo remoto de adobe · opcional</div>
-        <div class="dist">~330 km · 4.5hs · ripio · SUV</div>
-        <span class="badge" style="background:rgba(192,57,43,0.15);color:#C0392B;">DÍA 8 · 2.780 msnm</span>
-      </div>
-    </div>
 
     <div class="footer-note">TOTAL RUTA ≈ 1.200 KM<br>5 DÍAS CON AUTO ALQUILADO</div>
+    </div><!-- /#panel-places -->
+
+    <!-- Panel itinerario -->
+    <div id="panel-itin" style="display:none">
+      <div class="day-tabs" id="sbDayTabs"></div>
+      <div class="day-content" id="sbDayContent"></div>
+    </div>
   </div>
 
   <div id="map"></div>
+</div>
+
+<!-- MOBILE INFO PANEL -->
+<div class="info-panel" id="infoPanel">
+  <div class="panel-drag"><div class="panel-drag-pill"></div></div>
+  <div class="panel-header">
+    <div class="panel-header-info">
+      <div class="panel-day" id="panelDay"></div>
+      <div class="panel-title" id="panelTitle"></div>
+    </div>
+    <button class="panel-close" onclick="closeInfoPanel()">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="panel-sub" id="panelSub"></div>
+    <div class="panel-dist" id="panelDist"></div>
+    <div id="panelAccom"></div>
+  </div>
+</div>
+
+<!-- DAY ITINERARY MODAL -->
+<div class="day-overlay" id="dayOverlay" onclick="handleOverlayClick(event)">
+  <div class="day-modal" id="dayModal">
+    <div class="day-modal-header">
+      <span class="day-modal-title">📅 Itinerario día a día</span>
+      <button class="day-modal-close" onclick="closeDayModal()">✕</button>
+    </div>
+    <div class="day-tabs" id="dayTabs"></div>
+    <div class="day-content" id="dayContent"></div>
+  </div>
 </div>
 
 <script>
@@ -357,6 +786,19 @@ const attr = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap
 const map = L.map('map', { center:[-24.3,-65.7], zoom:7 });
 let currentLayer = L.tileLayer(darkTile, { attribution:attr, subdomains:'abcd', maxZoom:19 }).addTo(map);
 let isDark = true;
+
+/* ── TOGGLE TIME LABELS ── */
+let timeLabelsVisible = false;
+
+function toggleTimeLabels() {
+  timeLabelsVisible = !timeLabelsVisible;
+  timeMarkers.forEach(t => {
+    if (timeLabelsVisible) t.marker.addTo(map);
+    else map.removeLayer(t.marker);
+  });
+  const btn = document.getElementById('timeBtn');
+  btn.classList.toggle('toggle-btn--off', !timeLabelsVisible);
+}
 
 /* ── TOGGLE MODE ── */
 function toggleMode() {
@@ -381,29 +823,26 @@ function toggleMode() {
 /* ── MOBILE SIDEBAR TOGGLE ── */
 const sidebarEl = document.getElementById('sidebar');
 const handleEl  = document.getElementById('sidebarHandle');
+const handleLabel = handleEl.querySelector('.handle-label');
+
 handleEl.addEventListener('click', () => {
-  sidebarEl.classList.toggle('open');
-  map.invalidateSize();
+  const isOpen = sidebarEl.classList.toggle('open');
+  handleLabel.textContent = isOpen ? 'Cerrar' : 'Ver paradas';
+  setTimeout(() => map.invalidateSize(), 370);
 });
 
 /* ── PLACES DATA ── */
 const places = [
-  { id:0, num:"1", lat:-24.7821, lng:-65.4232, name:"Salta Capital",         sub:"Base del viaje · 5 noches",              dist:"",                          color:"#C4623A", day:"Base",
-    accom:{ type:"hotel",  name:"Hotel Casa Chango",       link:"https://www.booking.com",  price:"$85 USD",  checkin:"01/06/2026", checkout:"06/06/2026" } },
-  { id:1, num:"2", lat:-24.7905, lng:-65.3975, name:"Tren a las Nubes",      sub:"Sale desde Salta ciudad · Día 5",         dist:"4.200 msnm",                color:"#5C7A9E", day:"Día 5",
-    accom:null },
-  { id:2, num:"3", lat:-26.0731, lng:-65.9761, name:"Cafayate",              sub:"Quebrada de las Conchas + Bodegas",       dist:"~190 km · 2.5hs de Salta",  color:"#8B7355", day:"Día 3",
-    accom:{ type:"airbnb", name:"La Bodega del Valle",     link:"https://www.airbnb.com",   price:"$62 USD",  checkin:"03/06/2026", checkout:"04/06/2026" } },
-  { id:3, num:"4", lat:-25.1202, lng:-66.1625, name:"Cachi",                 sub:"Valles Calchaquíes · Cuesta del Obispo",  dist:"~170 km · 3hs de montaña",  color:"#6B8E6B", day:"Día 4",
-    accom:{ type:"hotel",  name:"Llaqta Marka Lodge",      link:"https://www.booking.com",  price:"$74 USD",  checkin:"04/06/2026", checkout:"05/06/2026" } },
-  { id:4, num:"5", lat:-23.7466, lng:-65.4992, name:"Purmamarca",            sub:"Cerro de los 7 Colores",                  dist:"~170 km · 1.45hs de Salta", color:"#9B59B6", day:"Día 6",
+  { id:0, num:"1", lat:-24.7821, lng:-65.4232, name:"Salta Capital",         sub:"Joy Tower · 1 noche · Monoambiente",     dist:"",                          color:"#C4623A", day:"Día 1",
+    accom:{ type:"hotel",  name:"Monoambiente Joy Tower",  link:"",                         price:"$58.000",  checkin:"30/05/2026", checkout:"31/05/2026" } },
+  { id:2, num:"2", lat:-26.0731, lng:-65.9761, name:"Cafayate",              sub:"Quebrada de las Conchas + Bodegas",       dist:"~190 km · 2.5hs de Salta",  color:"#8B7355", day:"Día 2",
+    accom:{ type:"hotel",  name:"El Porvenir Wine Lodge",  link:"",                         price:"",         checkin:"31/05/2026", checkout:"01/06/2026" } },
+  { id:4, num:"3", lat:-23.7466, lng:-65.4992, name:"Purmamarca",            sub:"Cerro de los 7 Colores",                  dist:"~170 km · 1.45hs de Salta", color:"#9B59B6", day:"Día 6",
     accom:{ type:"airbnb", name:"Rincón del Cerro",        link:"https://www.airbnb.com",   price:"$55 USD",  checkin:"06/06/2026", checkout:"07/06/2026" } },
-  { id:5, num:"6", lat:-23.5769, lng:-65.3934, name:"Tilcara",               sub:"Pucará · Base en Jujuy · 2 noches",       dist:"~190 km · 2hs de Salta",    color:"#E67E22", day:"Días 6-7-8",
+  { id:5, num:"4", lat:-23.5769, lng:-65.3934, name:"Tilcara",               sub:"Pucará · Base en Jujuy · 2 noches",       dist:"~190 km · 2hs de Salta",    color:"#E67E22", day:"Días 6-7-8",
     accom:{ type:"airbnb", name:"Casa del Pucará",         link:"https://www.airbnb.com",   price:"$68 USD",  checkin:"06/06/2026", checkout:"08/06/2026" } },
-  { id:6, num:"7", lat:-23.2008, lng:-65.3531, name:"Humahuaca",             sub:"Quebrada de Humahuaca · UNESCO",          dist:"~240 km · 3hs de Salta",    color:"#C9A020", day:"Día 6",
+  { id:6, num:"5", lat:-23.2008, lng:-65.3531, name:"Humahuaca",             sub:"Quebrada de Humahuaca · UNESCO",          dist:"~240 km · 3hs de Salta",    color:"#C9A020", day:"Día 6",
     accom:null },
-  { id:7, num:"8", lat:-22.7914, lng:-65.2159, name:"Iruya",                 sub:"Pueblo remoto de adobe · opcional",       dist:"~330 km · 4.5hs · ripio",   color:"#C0392B", day:"Día 8",
-    accom:{ type:"hotel",  name:"El Adobe de Iruya",       link:"https://www.booking.com",  price:"$48 USD",  checkin:"08/06/2026", checkout:"09/06/2026" } },
 ];
 
 /* ── ROUTE SEGMENTS ── */
@@ -411,9 +850,7 @@ const segments = [
   { points:[[-24.7821,-65.4232],[-23.7466,-65.4992]], color:'#D4A547', lc:'#D4A547', dash:null,  label:'1h 45min' },
   { points:[[-23.7466,-65.4992],[-23.5769,-65.3934]], color:'#D4A547', lc:'#D4A547', dash:null,  label:'25 min' },
   { points:[[-23.5769,-65.3934],[-23.2008,-65.3531]], color:'#D4A547', lc:'#D4A547', dash:null,  label:'40 min' },
-  { points:[[-23.2008,-65.3531],[-22.7914,-65.2159]], color:'#D4A547', lc:'#D4A547', dash:null,  label:'2h 30min' },
   { points:[[-24.7821,-65.4232],[-26.0731,-65.9761]], color:'#8B7355', lc:'#8B7355', dash:'6 4', label:'2h 30min' },
-  { points:[[-24.7821,-65.4232],[-25.1202,-66.1625]], color:'#6B8E6B', lc:'#6B8E6B', dash:'6 4', label:'3h 00min' },
 ];
 
 let timeMarkers = [];
@@ -452,7 +889,7 @@ function drawSegments() {
       (seg.points[0][1] + seg.points[1][1]) / 2,
     ];
     const icon = L.divIcon({ className:'time-label', html: makeTimeLabelHtml(seg.label, seg.lc), iconSize:null, iconAnchor:null });
-    const m = L.marker(mid, { icon, interactive:false, keyboard:false }).addTo(map);
+    const m = L.marker(mid, { icon, interactive:false, keyboard:false });
     timeMarkers.push({ marker:m, label:seg.label, lc:seg.lc });
   });
 }
@@ -470,6 +907,42 @@ function refreshTimeLabels() {
 drawSegments();
 
 /* ── PLACE MARKERS ── */
+/* ── HOTEL MARKERS ── */
+const hotels = [
+  { name:"Monoambiente Joy Tower (FMA Coliving)", short:"Joy Tower",         lat:-24.7900, lng:-65.4200, days:"Días 1 y 4",  checkin:"30/05 y 02/06", checkout:"31/05 y 03/06", address:"Necochea 651, Salta" },
+  { name:"El Porvenir Wine Lodge",                short:"El Porvenir",       lat:-26.0731, lng:-65.9761, days:"Día 2",       checkin:"31/05",          checkout:"01/06",          address:"Belgrano 32, Finca El Retiro, Cafayate" },
+  { name:"Altos de la Viña, Wine Hotel & Spa",    short:"Altos de la Viña",  lat:-24.192,  lng:-65.286,  days:"Días 5·6·7",  checkin:"03/06",          checkout:"06/06",          address:"Av. Pasquini López 50, San Salvador de Jujuy" },
+];
+
+hotels.forEach(h => {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="
+      display:flex; align-items:center; gap:5px;
+      background:rgba(22,33,50,0.92);
+      border:1.5px solid rgba(212,165,71,0.6);
+      border-radius:20px;
+      padding:4px 11px 4px 7px;
+      font-family:'DM Sans',sans-serif;
+      font-size:11px; font-weight:500;
+      color:#F2E8D9;
+      white-space:nowrap;
+      box-shadow:0 2px 10px rgba(0,0,0,0.45);
+      pointer-events:none;
+    "><span style="font-size:13px">🏨</span> ${h.short}</div>`,
+    iconSize: null,
+    iconAnchor: [0, 14],
+  });
+  const m = L.marker([h.lat, h.lng], { icon, zIndexOffset:-200 }).addTo(map);
+  m.bindPopup(`
+    <div class="popup-day">${h.days}</div>
+    <div class="popup-title">🏨 ${h.name}</div>
+    <div class="popup-sub" style="margin-bottom:6px">📍 ${h.address}</div>
+    <div class="popup-accom-row"><span>📅 Check-in</span><span>${h.checkin}</span></div>
+    <div class="popup-accom-row"><span>📅 Check-out</span><span>${h.checkout}</span></div>
+  `, { maxWidth:250 });
+});
+
 const leafletMarkers = [];
 
 places.forEach(p => {
@@ -522,9 +995,45 @@ places.forEach(p => {
     ${accomHtml}
   `, {maxWidth:240, minWidth:200});
 
-  marker.on('click', () => setActive(p.id));
-  leafletMarkers.push({id:p.id, marker, lat:p.lat, lng:p.lng});
+  marker.on('click', () => {
+    setActive(p.id);
+    if (window.innerWidth <= 700) {
+      openInfoPanel(p);
+    }
+  });
+  leafletMarkers.push({id:p.id, marker, lat:p.lat, lng:p.lng, place:p});
 });
+
+/* ── INFO PANEL (mobile) ── */
+const infoPanel = document.getElementById('infoPanel');
+
+function openInfoPanel(p) {
+  document.getElementById('panelDay').textContent = p.day;
+  document.getElementById('panelTitle').textContent = `${p.num}. ${p.name}`;
+  document.getElementById('panelSub').textContent = p.sub;
+  const distEl = document.getElementById('panelDist');
+  distEl.textContent = p.dist;
+  distEl.style.display = p.dist ? '' : 'none';
+  const accomEl = document.getElementById('panelAccom');
+  if (p.accom) {
+    accomEl.innerHTML = `
+      <hr class="panel-divider">
+      <span class="panel-accom-type ${p.accom.type}">${p.accom.type === 'hotel' ? '🏨 HOTEL' : '🏠 AIRBNB'}</span>
+      <a class="panel-accom-name" href="${p.accom.link}" target="_blank" rel="noopener">${p.accom.name} ↗</a>
+      <div class="panel-accom-row"><span>💰 Por noche</span><span>${p.accom.price}</span></div>
+      <div class="panel-accom-row"><span>📅 Check-in</span><span>${p.accom.checkin}</span></div>
+      <div class="panel-accom-row"><span>📅 Check-out</span><span>${p.accom.checkout}</span></div>`;
+  } else {
+    accomEl.innerHTML = '';
+  }
+  infoPanel.classList.add('visible');
+  sidebarEl.classList.remove('open');
+  handleLabel.textContent = 'Ver paradas';
+}
+
+function closeInfoPanel() {
+  infoPanel.classList.remove('visible');
+}
 
 /* ── INTERACTION ── */
 function goTo(id) {
@@ -532,12 +1041,14 @@ function goTo(id) {
   if (!m) return;
   const zoom = (id===0||id===1) ? 12 : id>=4 ? 11 : 10;
   map.flyTo([m.lat, m.lng], zoom, {duration:1.2});
-  setTimeout(() => m.marker.openPopup(), 800);
-  setActive(id);
   if (window.innerWidth <= 700) {
+    setTimeout(() => openInfoPanel(m.place), 800);
     sidebarEl.classList.remove('open');
-    map.invalidateSize();
+    handleLabel.textContent = 'Ver paradas';
+  } else {
+    setTimeout(() => m.marker.openPopup(), 800);
   }
+  setActive(id);
 }
 
 function setActive(id) {
@@ -546,7 +1057,252 @@ function setActive(id) {
   if (el) { el.classList.add('active'); el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 }
 
-map.on('click', () => document.querySelectorAll('.place-item').forEach(el => el.classList.remove('active')));
+map.on('click', () => {
+  document.querySelectorAll('.place-item').forEach(el => el.classList.remove('active'));
+  closeInfoPanel();
+});
+
+/* ── DAY ITINERARY DATA ── */
+const itinerary = [
+  {
+    day:1, label:"30/5", weekday:"Sáb", mapIds:[0],
+    date:"Sábado 30 de Mayo", title:"Llegada a Salta",
+    events:[
+      { type:"flight",  icon:"✈️", label:"Vuelo de ida",              detail:"AEP 08:00 → SLA 10:15 · Aerolíneas Argentinas · Directo · 2h 15min · Sin equipaje" },
+      { type:"note",    icon:"🧳", label:"Llegada aeropuerto Salta",  detail:"~10:30hs · Tomar remís al centro (~$8 USD · 20 min)" },
+      { type:"hotel",   icon:"🏨", label:"Monoambiente Joy Tower (FMA Coliving)", detail:"Check-in 30/05 · Check-out 31/05 · 1 noche · $58.000 · Reserva #3652524131176" },
+      { type:"explore", icon:"🗺️", label:"Tarde en el centro",        detail:"Plaza 9 de Julio · Cabildo · Catedral · Balcarce (mercado y bares)" },
+    ]
+  },
+  {
+    day:2, label:"31/5", weekday:"Dom", mapIds:[2],
+    date:"Domingo 31 de Mayo", title:"Salta → Cafayate",
+    events:[
+      { type:"note",    icon:"🏨", label:"Check-out Joy Tower",         detail:"Salida temprana" },
+      { type:"drive",   icon:"🔑", label:"Retiro auto · Hertz Salta",  detail:"10:00hs · Tolerancia 45 min · Shopping Alto Noa · Av. Bicentenario de la Batalla de Salta 702 · Reserva #1765549" },
+      { type:"drive",   icon:"🚗", label:"Ruta hacia Cafayate",        detail:"~190 km · 2h 30min · Ruta 68 sur · Quebrada de las Conchas" },
+      { type:"explore", icon:"🏜️", label:"Quebrada de las Conchas",   detail:"Paradas: Garganta del Diablo · El Sapo · El Fraile · El Anfiteatro" },
+      { type:"hotel",   icon:"🏨", label:"El Porvenir Wine Lodge",      detail:"Check-in 15:00hs · Check-out 01/06 11:00hs · Reserva #070003503 · Incluye: desayuno gourmet · visita bodega · copa bienvenida · WiFi · parking · minibar" },
+    ]
+  },
+  {
+    day:3, label:"1/6", weekday:"Lun", mapIds:[2],
+    date:"Lunes 1 de Junio", title:"Recorrido por Cafayate",
+    events:[
+      { type:"explore", icon:"🍷", label:"Bodegas de Cafayate",       detail:"Torrontés · Degustaciones · Bodega Nanni · El Esteco · Colomé" },
+      { type:"explore", icon:"🏛️", label:"Museo de la Vid y el Vino", detail:"Centro histórico · Entrada libre" },
+      { type:"explore", icon:"🏜️", label:"Dunas de Cafayate",         detail:"Arena roja · Paseo al atardecer · Formaciones únicas" },
+      { type:"note",    icon:"⏰", label:"Check-out El Porvenir",     detail:"Hasta las 11:00hs" },
+      { type:"hotel",   icon:"🏨", label:"Check-in alojamiento",      detail:"Reserva en Booking.com · nicolechane10@hotmail.com" },
+    ]
+  },
+  {
+    day:4, label:"2/6", weekday:"Mar", mapIds:[0,2],
+    date:"Martes 2 de Junio", title:"Cafayate → Salta",
+    events:[
+      { type:"note",    icon:"🏠", label:"Check-out Cafayate",         detail:"Mañana · Cargar combustible" },
+      { type:"drive",   icon:"🚗", label:"Regreso a Salta",            detail:"~190 km · 2h 30min por Ruta 68" },
+      { type:"hotel",   icon:"🏨", label:"Monoambiente Joy Tower (FMA Coliving)", detail:"Check-in · Noche en Salta" },
+    ]
+  },
+  {
+    day:5, label:"3/6", weekday:"Mié", mapIds:[0],
+    date:"Miércoles 3 de Junio", title:"Micro a Jujuy",
+    events:[
+      { type:"bus",     icon:"🚌", label:"Micro Salta → Jujuy",       detail:"Terminal de Salta · Llegada a San Salvador de Jujuy ~14:30hs" },
+      { type:"note",    icon:"😌", label:"Tarde chill en Jujuy",      detail:"San Salvador de Jujuy · Pasear sin apuro · Cenar tranquilo" },
+      { type:"hotel",   icon:"🏨", label:"Altos de la Viña, Wine Hotel & Spa", detail:"Check-in · Base para los días de Quebrada" },
+    ]
+  },
+  {
+    day:6, label:"4/6", weekday:"Jue", mapIds:[4,5,6],
+    date:"Jueves 4 de Junio", title:"Recorrido Quebrada",
+    events:[
+      { type:"drive",   icon:"🚗", label:"Ruta Quebrada de Humahuaca",detail:"Ruta Nacional 9 hacia el norte" },
+      { type:"explore", icon:"🌈", label:"Purmamarca",                 detail:"Cerro de los 7 Colores · Mercado artesanal · 2.324 msnm" },
+      { type:"explore", icon:"🏛️", label:"Tilcara",                   detail:"Pucará de Tilcara · Jardín botánico andino · 2.461 msnm" },
+      { type:"explore", icon:"🏔️", label:"Humahuaca",                 detail:"Monumento a la Independencia · Quebrada UNESCO · 2.940 msnm" },
+      { type:"hotel",   icon:"🏨", label:"Altos de la Viña, Wine Hotel & Spa", detail:"Hotel · Jujuy · Estadia" },
+    ]
+  },
+  {
+    day:7, label:"5/6", weekday:"Vie", mapIds:[4,5],
+    date:"Viernes 5 de Junio", title:"Salinas + Purmamarca",
+    events:[
+      { type:"drive",   icon:"🚗", label:"Ruta 52 · Cuesta de Lipán", detail:"Acceso desde Purmamarca · Zigzags de altura · Impresionante" },
+      { type:"explore", icon:"🧂", label:"Salinas Grandes",           detail:"3.450 msnm · Salar de altura · Ruta de la Sal · Artesanías" },
+      { type:"explore", icon:"🌅", label:"Purmamarca al atardecer",   detail:"Cerro de los 7 Colores con otra luz · Paseo de los Colorados" },
+      { type:"hotel",   icon:"🏨", label:"Altos de la Viña, Wine Hotel & Spa", detail:"Hotel · Jujuy · Estadia" },
+    ]
+  },
+  {
+    day:8, label:"6/6", weekday:"Sáb", mapIds:[],
+    date:"Sábado 6 de Junio", title:"Regreso a Buenos Aires",
+    events:[
+      { type:"hotel",   icon:"🏨", label:"Check-out Altos de la Viña, Wine Hotel & Spa", detail:"Mañana · Guardar todo · Revisar que no quede nada" },
+      { type:"note",    icon:"⏰", label:"Llegar al aeropuerto JUJ",  detail:"Estar en Jujuy (JUJ) a las 16:30hs · 2 horas antes del vuelo doméstico" },
+      { type:"flight",  icon:"✈️", label:"Vuelo de regreso",          detail:"JUJ 18:45 → AEP 20:55 · Aerolíneas Argentinas · Directo · 2h 10min · Sin equipaje" },
+      { type:"note",    icon:"🏠", label:"Llegada Aeroparque",        detail:"Buenos Aires (AEP) ~20:55hs · ¡Fin del viaje!" },
+    ]
+  },
+];
+
+const tlBg = {
+  flight:  'rgba(92,122,158,0.22)',
+  hotel:   'rgba(212,165,71,0.18)',
+  drive:   'rgba(107,142,107,0.22)',
+  explore: 'rgba(155,89,182,0.18)',
+  bus:     'rgba(230,126,34,0.22)',
+  note:    'rgba(196,98,58,0.18)',
+};
+const tlTypeLabel = {
+  flight:'Vuelo', hotel:'Alojamiento', drive:'Traslado',
+  explore:'Actividad', bus:'Transporte', note:'Info',
+};
+
+let currentDayIdx = 0;
+
+function openDayModal(dayIdx = 0) {
+  currentDayIdx = dayIdx;
+  renderDayTabs();
+  renderDayContent(dayIdx);
+  document.getElementById('dayOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDayModal() {
+  document.getElementById('dayOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('dayOverlay')) closeDayModal();
+}
+
+function selectDay(idx) {
+  currentDayIdx = idx;
+  renderDayTabs();
+  renderDayContent(idx);
+  document.getElementById('dayContent').scrollTop = 0;
+}
+
+function renderDayTabs() {
+  const container = document.getElementById('dayTabs');
+  container.innerHTML = itinerary.map((d, i) => `
+    <button class="day-tab${i === currentDayIdx ? ' active' : ''}" onclick="selectDay(${i})">
+      <span class="day-tab-num">${d.day}</span>
+      <span class="day-tab-date">${d.label}</span>
+    </button>`).join('');
+  // scroll active tab into view
+  const activeBtn = container.children[currentDayIdx];
+  if (activeBtn) activeBtn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+}
+
+function renderDayContent(idx) {
+  const d = itinerary[idx];
+  const eventsHtml = d.events.map((ev, i) => `
+    <div class="timeline-item">
+      <div class="timeline-left">
+        <div class="timeline-icon" style="background:${tlBg[ev.type]}">${ev.icon}</div>
+        ${i < d.events.length - 1 ? '<div class="timeline-line"></div>' : ''}
+      </div>
+      <div class="timeline-body">
+        <div class="tl-type">${tlTypeLabel[ev.type]}</div>
+        <div class="tl-title">${ev.label}</div>
+        <div class="tl-detail">${ev.detail}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('dayContent').innerHTML = `
+    <div class="day-content-date">${d.weekday} · ${d.date}</div>
+    <div class="day-content-title">${d.title}</div>
+    <div class="timeline">${eventsHtml}</div>`;
+}
+
+/* ── SIDEBAR COLLAPSE & TABS ── */
+let sidebarCollapsed = false;
+
+function toggleSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  sidebarEl.classList.toggle('collapsed', sidebarCollapsed);
+  document.getElementById('collapseBtn').textContent = sidebarCollapsed ? '▶' : '◀';
+  setTimeout(() => map.invalidateSize(), 320);
+}
+
+function highlightDayPlaces(ids) {
+  leafletMarkers.forEach(m => {
+    const active = ids.length === 0 || ids.includes(m.id);
+    m.marker.setOpacity(active ? 1 : 0.15);
+    if (active && ids.length > 0 && m.marker._icon) {
+      const el = m.marker._icon;
+      el.classList.remove('marker-pop');
+      void el.offsetWidth;
+      el.classList.add('marker-pop');
+    }
+  });
+  if (!ids.length) return;
+  const targets = leafletMarkers.filter(m => ids.includes(m.id));
+  if (!targets.length) return;
+  if (targets.length === 1) {
+    map.flyTo([targets[0].lat, targets[0].lng], 11, { duration: 1.0 });
+  } else {
+    map.flyToBounds(targets.map(m => [m.lat, m.lng]), { padding:[60,60], duration:1.0, maxZoom:11 });
+  }
+}
+
+function switchSidebarTab(tab) {
+  document.getElementById('tab-places').classList.toggle('active', tab === 'places');
+  document.getElementById('tab-itin').classList.toggle('active', tab === 'itin');
+  document.getElementById('panel-places').style.display = tab === 'places' ? '' : 'none';
+  document.getElementById('panel-itin').style.display = tab === 'itin' ? '' : 'none';
+  if (tab === 'itin') highlightDayPlaces(itinerary[currentSbDayIdx].mapIds);
+  else highlightDayPlaces([]);
+}
+
+let currentSbDayIdx = 0;
+
+function renderSbDayTabs() {
+  const container = document.getElementById('sbDayTabs');
+  container.innerHTML = itinerary.map((d, i) => `
+    <button class="day-tab${i === currentSbDayIdx ? ' active' : ''}" onclick="selectSbDay(${i})">
+      <span class="day-tab-num">${d.day}</span>
+      <span class="day-tab-date">${d.label}</span>
+    </button>`).join('');
+  const activeBtn = container.children[currentSbDayIdx];
+  if (activeBtn) activeBtn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+}
+
+function renderSbDayContent(idx) {
+  const d = itinerary[idx];
+  const eventsHtml = d.events.map((ev, i) => `
+    <div class="timeline-item">
+      <div class="timeline-left">
+        <div class="timeline-icon" style="background:${tlBg[ev.type]}">${ev.icon}</div>
+        ${i < d.events.length - 1 ? '<div class="timeline-line"></div>' : ''}
+      </div>
+      <div class="timeline-body">
+        <div class="tl-type">${tlTypeLabel[ev.type]}</div>
+        <div class="tl-title">${ev.label}</div>
+        <div class="tl-detail">${ev.detail}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('sbDayContent').innerHTML = `
+    <div class="day-content-date">${d.weekday} · ${d.date}</div>
+    <div class="day-content-title">${d.title}</div>
+    <div class="timeline">${eventsHtml}</div>`;
+}
+
+function selectSbDay(idx) {
+  currentSbDayIdx = idx;
+  renderSbDayTabs();
+  renderSbDayContent(idx);
+  highlightDayPlaces(itinerary[idx].mapIds);
+}
+
+renderSbDayTabs();
+renderSbDayContent(0);
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDayModal(); });
 </script>
 </body>
 </html>
