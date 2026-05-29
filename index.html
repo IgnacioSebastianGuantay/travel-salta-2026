@@ -96,7 +96,7 @@
     flex-shrink: 0;
   }
   .toggle-btn:hover { background: var(--gold); color: #fff; }
-  .toggle-btn--off { color: var(--sub); border-color: rgba(255,255,255,0.15); }
+  .toggle-btn--off { opacity: 0.45; }
   .toggle-icon { font-size: 14px; }
 
   /* LAYOUT */
@@ -318,14 +318,18 @@
     .leaflet-popup-content-wrapper { font-size: 13px; }
     .popup-title { font-size: 13px; }
 
-    /* Handle fills full collapsed height so day tabs don't bleed through */
-    .sidebar-handle { min-height: 72px; }
+    /* Panel completamente oculto cuando el sidebar está cerrado */
+    #panel-itin { display: none; }
+    .sidebar.open #panel-itin { display: block; }
 
-    /* Day tabs sticky uses top:0 on mobile (no topbar above) */
+    /* Day tabs sticky: sin offset (no hay topbar en mobile) */
     #sbDayTabs { top: 0; }
 
-    /* Day content padding bottom for safe area */
-    #sbDayContent { padding: 14px 14px calc(20px + env(safe-area-inset-bottom)); }
+    /* Day content con espacio para safe area */
+    #sbDayContent { padding: 14px 14px calc(24px + env(safe-area-inset-bottom)); }
+
+    /* Handle claramente tappable */
+    .sidebar-handle { min-height: 64px; }
   }
 
   @media (max-width: 380px) {
